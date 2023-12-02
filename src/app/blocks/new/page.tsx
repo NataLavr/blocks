@@ -1,22 +1,9 @@
 import { db } from "@/app/db";
+import * as actions from "@/actions";
 import { redirect } from "next/navigation";
 
 export default function BlockCreatePage () {
-    async function createBlock(formData: FormData){
-
-    "use server";
-
-    // GET the form data
-    const title = formData.get("title") as string;
-    const code = formData.get("code") as string;
-
-    //Insert the data into database using prisma
-    const block = await db.block.create({data:{title, code}});
-
-    //Redirect the user back to the homepage
-    redirect("/");
-
-    }
+  
     return (
         <form action={createBlock}>
             <h3 className="font-bold m-3">Create a Block</h3>

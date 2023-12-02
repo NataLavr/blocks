@@ -1,46 +1,37 @@
-"use client";
-
-import { useState, useEffect } from 'react';
-import Link from "next/link";
-import { getBlock } from "./getBlock.server";
-import { deleteBlock } from "./edit/deleteBlock";
 import { db } from "@/app/db";
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import * as actions from "@/actions";
 
-export default function BlockShowPage({ params }:any) {
-    const [block, setBlock] = useState(null);
+interface BlockShowPageProps {
+    params: {id: string};
+}
 
-    useEffect(() => {
-        const fetchBlock = async () => {
-            const blockData = await getBlock(parseInt(params.id));
-            setBlock(blockData);
-        };
-
-        fetchBlock();
-    }, [params.id]);
+export default async function BlockShowPage({params}: BlockShowPageProps ) {
+    const block = await db.block.findFirst({
+        where: { id: parseInt(params.id) },
+    });
 
     if (!block) {
-        return <p>Loading or Block not found...</p>;
+        return notFound();
     }
 
+const deleteBlockAction = actions.deleteBlock.bind(null, block.id)
     return (
         <div>
-            <Link href="/" className="flex justify-center w-20 my-5 items-center p-2 border rounded bg-blue-300 hover:bd-blue-500">
-                <div>Back</div>
-            </Link>
-            <h3>Title: {block.title}</h3>
-            <p>Code: {block.code}</p>
-            <div className="flex justify-left gap-5">
-            <Link href={`/blocks/${params.id}/edit`} className="flex justify-center w-20 my-5 items-center p-2 border rounded bg-green-300 hover:bd-green-500">
-                <div>Edit</div>
-            </Link>
-            <button 
-                className="flex justify-center w-20 my-5 items-center p-2 border rounded bg-red-300 hover:bd-red-500"
-                type="button"
-                onClick={deleteBlock}
-            >Delete
-            </button>
+            <div className="flex m-4 justify-between items-center">
+                <div className="flex-col">
+                <h1 className="text-xl font-bold">{block.title}</h1>
             </div>
+                <div className="flex gap-4">
+                <Link className="p-2 border" href={`/`}>Back</Link>
+                    <Link className="p-2 border" href={`/blocks/${block.id}/edit`}>Edit</Link>
+                    <form action={deleteBlockAction}>
+                      <button className="p-2 border rounded">Delete</button>
+                    </form>
+                </div>
+            </div>
+            <pre className="p-3 rounded bg-gray-200 border-gray-200">{block.code}</pre>
         </div>
-    );
+    )
 }
